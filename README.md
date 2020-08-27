@@ -1,2 +1,2 @@
 # liquidbot
-Liquid democracy management system for Mount September, civclassics
+Liquid democracy managing bot for Mount September, Civclassics
