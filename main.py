@@ -9,7 +9,7 @@ from discord.ext import commands
 bot = commands.Bot(command_prefix="~", description="CivBot")
 
 try:
-    grants = json.load(open('grants.json'))
+    grants = json.load(open('resources/grants.json'))
     print(grants)
 except FileNotFoundError:
     print("No grants found")
@@ -32,7 +32,7 @@ async def trust(ctx, content):
     except AttributeError:
         await ctx.channel.send("{0} is not a valid argument".format(content))
         return        
-    with open("grants.json", "w") as file:
+    with open("resources/grants.json", "w") as file:
         json.dump(grants, file)
     await ctx.channel.send("Granted {0}'s voting power to {1}".format(grantee.name, granted.name))
     print(grants)
