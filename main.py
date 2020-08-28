@@ -40,7 +40,7 @@ async def trust(ctx, content):
     print(grants)
 
 def drawNodes(nodes, edges):
-    G = nx.Graph()
+    G = nx.DiGraph()
     plt.clf()
     print(nodes)
     print(edges)
