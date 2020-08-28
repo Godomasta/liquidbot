@@ -42,10 +42,11 @@ async def trust(ctx, content):
 def drawNodes(nodes, edges):
     G = nx.DiGraph()
     plt.clf()
-    print(nodes)
-    print(edges)
     G.add_nodes_from(nodes)
-    G.add_edges_from(edges)
+    for edge in edges:
+        u,v,w = edge
+        print(w)
+        G.add_edge(u, v, weight=w)
     nx.draw(G, with_labels=True)
     plt.savefig("resources/output.png")
 
@@ -61,19 +62,19 @@ async def info(ctx, content):
     except AttributeError:
         output = []
     nodes = output
-    edges = [(name, granted.name) for name in output]
+    edges = [(name, granted.name, len([key for key in grants if grants[key] == ctx.message.guild.get_member_named(name).id])+1) for name in output]
     if len(output) > 0:
         await ctx.channel.send("{0} is trusted by {1}: {2}".format(granted.name, len(output), output))
     else:
         await ctx.channel.send("{0} is trusted by {1}".format(granted.name, len(output)))
     try:
-        await ctx.channel.send("{0} trusts: {1}".format(granted.name, ctx.message.guild.get_member(grants[granted.id]).name))
         edges.append((granted.name, ctx.message.guild.get_member(grants[granted.id]).name))
         output.append(ctx.message.guild.get_member(grants[granted.id]).name)
+        await ctx.channel.send("{0} trusts: {1}".format(granted.name, ctx.message.guild.get_member(grants[granted.id]).name))
     except KeyError:
         await ctx.channel.send("{0} trusts nobody".format(granted.name))
-    drawNodes(nodes, edges)
 
+    drawNodes(nodes, edges)
     await ctx.channel.send(file=discord.File('resources/output.png'))
 
 if __name__ == "__main__":
