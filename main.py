@@ -17,7 +17,7 @@ except FileNotFoundError:
 except json.decoder.JSONDecodeError:
     print("Couldn't load grants")
     grants = dict()
-#JSON stores keys as str, convert back to int
+"""JSON stores keys as str, convert back to int"""
 grants = {int(key):value for key,value in grants.items()}
 
 @bot.event
@@ -45,9 +45,9 @@ def drawNodes(nodes, edges):
     G.add_nodes_from(nodes)
     for edge in edges:
         u,v,w = edge
-        print(w)
         G.add_edge(u, v, weight=w)
-    nx.draw(G, with_labels=True)
+    widths = [G[u][v]['weight'] for u,v in G.edges()]
+    nx.draw(G, with_labels=True, width=widths)
     plt.savefig("resources/output.png")
 
 @bot.command()
@@ -62,7 +62,7 @@ async def info(ctx, content):
     except AttributeError:
         output = []
     nodes = output
-    edges = [(name, granted.name, len([key for key in grants if grants[key] == ctx.message.guild.get_member_named(name).id])+1) for name in output]
+    edges = [(name, granted.name) for name in output]
     if len(output) > 0:
         await ctx.channel.send("{0} is trusted by {1}: {2}".format(granted.name, len(output), output))
     else:
@@ -74,6 +74,7 @@ async def info(ctx, content):
     except KeyError:
         await ctx.channel.send("{0} trusts nobody".format(granted.name))
 
+    edges = [(u, v, len([key for key in grants if grants[key] == ctx.message.guild.get_member_named(u).id])+1) for u,v in edges]
     drawNodes(nodes, edges)
     await ctx.channel.send(file=discord.File('resources/output.png'))
 
