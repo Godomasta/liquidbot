@@ -17,6 +17,8 @@ except FileNotFoundError:
 except json.decoder.JSONDecodeError:
     print("Couldn't load grants")
     grants = dict()
+#JSON stores keys as str, convert back to int
+grants = {int(key):value for key,value in grants.items()}
 
 @bot.event
 async def on_ready():
