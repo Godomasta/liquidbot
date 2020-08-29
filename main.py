@@ -24,6 +24,28 @@ grants = {int(key):value for key,value in grants.items()}
 async def on_ready():
     print("Logged in as {0.user}".format(bot))
 
+"""Returns the ids of members that DIRECTLY trust user"""
+def getPower(user):
+    power = []
+    for key in grants:
+        if grants[key] == user:
+            power.append(key)
+    return power
+
+"""Returns the ids of members that DIRECTLY and INDIRECTLY trust user"""
+def crawlPower(user):
+    edges = []
+    for key in grants:
+        if grants[key] == user:
+            edges.append((key, user))
+            crawlSub(key, edges)
+    return edges
+def crawlSub(user, edges):
+    for key in grants:
+        if grants[key] == user:
+            edges.append((key, user, len(getPower(key)+1)))
+            crawlSub(key, edges)
+
 @bot.command()
 async def trust(ctx, content):
     """Trusts a user"""
@@ -57,26 +79,20 @@ async def info(ctx, content):
     if granted == None:
         await ctx.channel.send("{0} is not a valid argument".format(content))
         return
-    try:
-        output = [ctx.message.guild.get_member(grantee).name for grantee in grants if grants[grantee] == granted.id]
-    except AttributeError:
-        output = []
-    nodes = output
-    edges = [(name, granted.name) for name in output]
+    output = getPower(granted.id)
     if len(output) > 0:
         await ctx.channel.send("{0} is trusted by {1}: {2}".format(granted.name, len(output), output))
     else:
         await ctx.channel.send("{0} is trusted by {1}".format(granted.name, len(output)))
     try:
-        edges.append((granted.name, ctx.message.guild.get_member(grants[granted.id]).name))
-        output.append(ctx.message.guild.get_member(grants[granted.id]).name)
         await ctx.channel.send("{0} trusts: {1}".format(granted.name, ctx.message.guild.get_member(grants[granted.id]).name))
     except KeyError:
         await ctx.channel.send("{0} trusts nobody".format(granted.name))
+    
+    edges = crawlPower(granted.id)
+    print(edges)
 
-    edges = [(u, v, len([key for key in grants if grants[key] == ctx.message.guild.get_member_named(u).id])+1) for u,v in edges]
-    drawNodes(nodes, edges)
-    await ctx.channel.send(file=discord.File('resources/output.png'))
+    #await ctx.channel.send(file=discord.File('resources/output.png'))
 
 if __name__ == "__main__":
     config_type = 'test'
