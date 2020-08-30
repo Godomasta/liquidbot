@@ -44,7 +44,6 @@ def crawlPower(ctx, user):
         if grants[key] == user:
             edges.append((ctx.message.guild.get_member(key).name, ctx.message.guild.get_member(user).name, len(crawlPower(ctx, key))+1))
             crawl(key)
-    print(edges)
     return edges
 
 @bot.command()
@@ -99,6 +98,7 @@ async def info(ctx, content):
             nodes.append(v)
     drawNodes(nodes, edges)
     await ctx.channel.send(file=discord.File('resources/output.png'))
+    await ctx.channel.send("{0} has a power of: {1}".format(granted.name, len(edges)+1))
 
 if __name__ == "__main__":
     config_type = 'test'
