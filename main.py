@@ -35,16 +35,16 @@ def getPower(user):
 """Returns the ids of members that DIRECTLY and INDIRECTLY trust user"""
 def crawlPower(user):
     edges = []
+    def crawl(user):
+        for key in grants:
+            if grants[key] == user:
+                edges.append((key, user, len(crawlPower(key))+1))
+                crawl(key)
     for key in grants:
         if grants[key] == user:
-            edges.append((key, user))
-            crawlSub(key, edges)
+            edges.append((key, user, len(crawlPower(key))+1))
+            crawl(key)
     return edges
-def crawlSub(user, edges):
-    for key in grants:
-        if grants[key] == user:
-            edges.append((key, user, len(getPower(key)+1)))
-            crawlSub(key, edges)
 
 @bot.command()
 async def trust(ctx, content):
