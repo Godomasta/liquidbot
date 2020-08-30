@@ -25,25 +25,26 @@ async def on_ready():
     print("Logged in as {0.user}".format(bot))
 
 """Returns the ids of members that DIRECTLY trust user"""
-def getPower(user):
+def getPower(ctx, user):
     power = []
     for key in grants:
         if grants[key] == user:
-            power.append(key)
+            power.append(ctx.message.guild.get_member(key).name)
     return power
 
 """Returns the ids of members that DIRECTLY and INDIRECTLY trust user"""
-def crawlPower(user):
+def crawlPower(ctx, user):
     edges = []
     def crawl(user):
         for key in grants:
             if grants[key] == user:
-                edges.append((key, user, len(crawlPower(key))+1))
+                edges.append((ctx.message.guild.get_member(key).name, ctx.message.guild.get_member(user).name, len(crawlPower(ctx, key))+1))
                 crawl(key)
     for key in grants:
         if grants[key] == user:
-            edges.append((key, user, len(crawlPower(key))+1))
+            edges.append((ctx.message.guild.get_member(key).name, ctx.message.guild.get_member(user).name, len(crawlPower(ctx, key))+1))
             crawl(key)
+    print(edges)
     return edges
 
 @bot.command()
@@ -79,7 +80,7 @@ async def info(ctx, content):
     if granted == None:
         await ctx.channel.send("{0} is not a valid argument".format(content))
         return
-    output = getPower(granted.id)
+    output = getPower(ctx, granted.id)
     if len(output) > 0:
         await ctx.channel.send("{0} is trusted by {1}: {2}".format(granted.name, len(output), output))
     else:
@@ -88,11 +89,16 @@ async def info(ctx, content):
         await ctx.channel.send("{0} trusts: {1}".format(granted.name, ctx.message.guild.get_member(grants[granted.id]).name))
     except KeyError:
         await ctx.channel.send("{0} trusts nobody".format(granted.name))
-    
-    edges = crawlPower(granted.id)
-    print(edges)
 
-    #await ctx.channel.send(file=discord.File('resources/output.png'))
+    edges = crawlPower(ctx, granted.id)
+    nodes = []
+    for u,v,_ in edges:
+        if u not in nodes:
+            nodes.append(u)
+        if v not in nodes:
+            nodes.append(v)
+    drawNodes(nodes, edges)
+    await ctx.channel.send(file=discord.File('resources/output.png'))
 
 if __name__ == "__main__":
     config_type = 'test'
