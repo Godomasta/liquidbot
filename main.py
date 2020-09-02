@@ -81,7 +81,7 @@ async def info(ctx, content):
         return
     output = getPower(ctx, granted.id)
     if len(output) > 0:
-        await ctx.channel.send("{0} is trusted by {1}: {2}".format(granted.name, len(output), output))
+        await ctx.channel.send("{0} is trusted by {1}: {2}".format(granted.name, len(output), output.join(",")))
     else:
         await ctx.channel.send("{0} is trusted by {1}".format(granted.name, len(output)))
     try:
